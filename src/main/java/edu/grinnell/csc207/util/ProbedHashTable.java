@@ -141,6 +141,13 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
   // | SimpleMap methods |
   // +-------------------+
 
+  boolean isNullKey(K key) {
+    if (key == null) {
+      return true;
+    } // if
+    return false;
+  }
+
   /**
    * Determine if the hash table contains a particular key.
    *
@@ -151,13 +158,18 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public boolean containsKey(K key) {
-    // STUB/HACK
-    try {
-      get(key);
-      return true;
-    } catch (Exception e) {
+    if (isNullKey(key)) {
       return false;
-    } // try/catch
+    }
+
+    boolean hasKey = false;
+    int findIndex = find(key);
+
+    if (this.pairs[findIndex] != null) { // found key
+      hasKey = true;
+    } // if
+  
+    return hasKey;
   } // containsKey(K)
 
   /**
@@ -185,6 +197,10 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   @Override
   public V get(K key) {
+    if (isNullKey(key)) {
+      throw new IndexOutOfBoundsException("Invalid key: null");
+    } // if
+
     int index = find(key);
     @SuppressWarnings("unchecked")
     Pair<K, V> pair = (Pair<K, V>) pairs[index];
@@ -223,6 +239,9 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
   @Override
   @SuppressWarnings("unchecked") // this ok since this.pairs should contain Pair<K, V>
   public V remove(K key) {
+    if (isNullKey(key)) {
+      return null;
+    } // if
 
     ConcurrentLinkedQueue<Pair <Integer, Pair <K, V>>> queue = new ConcurrentLinkedQueue<Pair <Integer, Pair <K, V>>>();
     V value = null;
@@ -287,6 +306,10 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   @SuppressWarnings("unchecked")
   public V set(K key, V value) {
+    if (isNullKey(key) || value == null) {
+      return null; // cannot set key or value as null since null key doesn't work and null return is being used to say not there.
+    } // if
+
     V result = null;
     // If there are too many entries, expand the table.
     if (this.size > (this.pairs.length * LOAD_FACTOR)) {
@@ -464,12 +487,13 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    * return the index of an entry we can use to store that key.
    *
    * @param key
-   *   The key we're searching for.
+   *   The key we're searching for. Key should not be null.
    *
    * @return the aforementioned index.
    */
   @SuppressWarnings("unchecked")
   int find(K key) {
+
     boolean found = false;
 
     int guessedIndex = Math.abs(key.hashCode()) % this.pairs.length;

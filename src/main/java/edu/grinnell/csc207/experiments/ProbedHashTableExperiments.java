@@ -45,8 +45,12 @@ public class ProbedHashTableExperiments {
      //HashTableExperiments.matchingKeysExpt(pen, htab);
      //HashTableExperiments.repeatedSetExpt(pen, htab);
      //HashTableExperiments.matchingSetExpt(pen, htab);
-     HashTableExperiments.multipleSetExpt(pen, htab);
+     //HashTableExperiments.multipleSetExpt(pen, htab);
      //HashTableExperiments.removeExpt(pen, htab);
+
+     htab.set("hi", null); // CANT DO NULL key
+     htab.dump(pen);
+
   } // main(String[])
 
 } // class ProbedHashTableExperiments
