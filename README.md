@@ -13,5 +13,5 @@ A lab on hash tables, structured for Maven.
 
 ---
 
-This code may be found at <https://github.com/USERNAME/lab-hashtables-maven>.
+This code may be found at <https://github.com/linricha/lab-hashtables-maven>.
 The original code may be found at <https://github.com/Grinnell-CSC207/lab-hashtables-maven>.
