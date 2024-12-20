@@ -47,9 +47,9 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    *
    * Bugs to squash.
    *
-   * [ ] Doesn't check for repeated keys in set.
+   * [X/?] Doesn't check for repeated keys in set.
    *
-   * [ ] Doesn't check for matching key in get.
+   * [X] Doesn't check for matching key in get.
    *
    * [ ] Doesn't handle collisions.
    *
@@ -384,8 +384,32 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    *
    * @return the aforementioned index.
    */
+  @SuppressWarnings("unchecked")
   int find(K key) {
-    return Math.abs(key.hashCode()) % this.pairs.length;
+    boolean found = false;
+
+    int guessedIndex = Math.abs(key.hashCode()) % this.pairs.length;
+    int realIndex = guessedIndex;
+
+
+    // We know that pairs contains the object pair<K,V>
+    // If key at guessed index is not the correct key, find the correct index.
+    while (!found) {
+
+      // space is null / traversed path correctly and could not find key
+      // i.e. key does not exist since key follows this same path to set it but null reached first
+      if (this.pairs[guessedIndex] == null) {
+        realIndex = guessedIndex;
+        found = true;
+      } else if (((Pair<K, V>) this.pairs[guessedIndex]).key().equals(key)) {// key found
+        realIndex = guessedIndex;
+        found = true;
+      } else { // check new index for key or empty space (to possible put new key / check if key can be found)
+        guessedIndex = (guessedIndex + PROBE_OFFSET) % this.pairs.length;
+      } // if/else-if/else
+    }
+
+    return realIndex;
   } // find(K)
 
 } // class ProbedHashTable<K, V>
