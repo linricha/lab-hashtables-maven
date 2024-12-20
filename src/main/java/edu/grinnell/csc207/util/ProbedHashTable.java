@@ -186,7 +186,7 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
     int index = find(key);
     @SuppressWarnings("unchecked")
     Pair<K, V> pair = (Pair<K, V>) pairs[index];
-    if (pair == null) {
+    if (pair == null || !(pair.key().equals(key))) {
       if (REPORT_BASIC_CALLS && (reporter != null)) {
         reporter.report("get(" + key + ") failed");
       } // if reporter != null
@@ -248,12 +248,14 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
     } else { // is null
       this.size++; // since will add a new entry
     } // if/else
-    this.pairs[index] = new Pair<K, V>(key, value); // do this only when this.pairs[index] == null not Whenever.
+    this.pairs[index] = new Pair<K, V>(key, value); // this should be empty space since find should work correctly (finds empty space)?
     // Report activity, if appropriate
     if (REPORT_BASIC_CALLS && (reporter != null)) {
       reporter.report("pairs[" + index + "] = " + key + ":" + value);
     } // if reporter != null
     
+    // this.size++;
+
     // And we're done
     return result;
   } // set(K, V)
