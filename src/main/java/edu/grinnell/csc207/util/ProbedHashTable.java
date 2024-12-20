@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.function.BiConsumer;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 /**
  * A simple implementation of probed hash tables.
  *
@@ -219,9 +221,58 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    *   The corresponding value.
    */
   @Override
+  @SuppressWarnings("unchecked") // this ok since this.pairs should contain Pair<K, V>
   public V remove(K key) {
-    // STUB
-    return null;
+
+    ConcurrentLinkedQueue<Pair <Integer, Pair <K, V>>> queue = new ConcurrentLinkedQueue<Pair <Integer, Pair <K, V>>>();
+    V value = null;
+
+    int removeIndex = find(key);
+    int pattern = Math.abs(key.hashCode()) % this.pairs.length;
+
+
+    //key at index with similar mod value as key
+    int similarKeyIndex = (removeIndex + PROBE_OFFSET) % this.pairs.length;
+
+
+    // key can't be found, i.e. it does not exist
+    if (this.pairs[removeIndex] == null) {
+      return null;
+    } else { // key is found
+      value = ((Pair<K , V>) this.pairs[removeIndex]).value(); // store value
+      this.pairs[removeIndex] = null; // remove
+    } // if/else
+
+    // Stops when loops back or reaches end the pattern of where the pairs are
+    // Stores pairs of similar pattern after similarKeyIndex
+    while (this.pairs[similarKeyIndex] != null) {
+      
+      K searchedKey = ((Pair<K , V>) this.pairs[similarKeyIndex]).key();
+      int calcPattern = Math.abs(searchedKey.hashCode()) % this.pairs.length;
+      if (calcPattern == pattern) { // match pattern
+        queue.add(new Pair<Integer, Pair<K, V>>(similarKeyIndex, (Pair<K , V>) this.pairs[similarKeyIndex]));
+      }
+
+      similarKeyIndex = (similarKeyIndex + PROBE_OFFSET) % this.pairs.length; // go to next potential index
+    } // while
+
+
+    // relocate/shift all pairs with key of pattern back by one pattern.
+    int relocateIndex = removeIndex;
+
+    while (!queue.isEmpty()) {
+      int patternedIndex = queue.peek().key();
+      Pair<K, V> relocatePair = queue.poll().value();
+
+      this.pairs[relocateIndex] = relocatePair;
+      relocateIndex = patternedIndex;
+    } // while
+
+    // end of pattern should be null since removed pair with key, which belongs to the pattern.
+    this.pairs[relocateIndex] = null;
+    this.size--;
+
+    return value;
   } // remove(K)
 
   /**

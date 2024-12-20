@@ -159,7 +159,17 @@ public class HashTableExperiments {
    */
   public static void removeExpt(PrintWriter pen,
       HashTable<String, String> htab) {
-    // STUB
+    htab.set("anteater", "Hi");
+    htab.set("buffalo", "bye");
+    htab.set("ubffalo", "Seen");
+    htab.set("nateater", "fired");
+    htab.set("olaffub", "backwarddds");
+    htab.dump(pen);
+    htab.remove("anteater");
+    htab.dump(pen);
+    htab.remove("ubffalo");
+    htab.dump(pen);
+    pen.println();
   } // removeExpt(PrintWriter, HashTable)
 
 } // class HashTableExperiments
