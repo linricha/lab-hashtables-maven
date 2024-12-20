@@ -49,21 +49,21 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    *
    * Bugs to squash.
    *
-   * [X/?] Doesn't check for repeated keys in set.
+   * [X] Doesn't check for repeated keys in set.
    *
    * [X] Doesn't check for matching key in get.
    *
-   * [ ] Doesn't handle collisions.
+   * [X] Doesn't handle collisions.
    *
-   * [ ] The `expand` method is not completely implemented.
+   * [?] The `expand` method is not completely implemented.
    *
-   * [ ] The `remove` method is not implemented.
+   * [X] The `remove` method is not implemented.
    *
    * Features to add.
    *
    * [ ] A full implementation of `containsKey`.
    *
-   * [ ] An iterator.
+   * [X] An iterator.
    */
 
   // +-----------+-------------------------------------------------------
@@ -299,7 +299,7 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
     } else { // is null
       this.size++; // since will add a new entry
     } // if/else
-    this.pairs[index] = new Pair<K, V>(key, value); // this should be empty space since find should work correctly (finds empty space)?
+    this.pairs[index] = new Pair<K, V>(key, value);
     // Report activity, if appropriate
     if (REPORT_BASIC_CALLS && (reporter != null)) {
       reporter.report("pairs[" + index + "] = " + key + ":" + value);
@@ -342,13 +342,28 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
    */
   public Iterator<Pair<K, V>> iterator() {
     return new Iterator<Pair<K, V>>() {
+
+      int currentIndex = 0;
+
       public boolean hasNext() {
-        // STUB
+        for (int i = currentIndex; i < pairs.length; i++) {
+          if (pairs[i] != null) { // has next pair
+            return true;
+          } // if
+        } // for
         return false;
       } // hasNext()
 
+      @SuppressWarnings("unchecked")
       public Pair<K, V> next() {
-        // STUB
+        if (hasNext()) {
+          while (pairs[currentIndex] == null) {
+            currentIndex++;
+          } // while
+          currentIndex++;
+          return (Pair <K, V>) pairs[currentIndex - 1];
+        } // if
+        
         return null;
       } // next()
     }; // new Iterator
@@ -412,6 +427,7 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
   /**
    * Expand the size of the table.
    */
+  @SuppressWarnings("unchecked") // safe
   void expand() { // doesn't this also mess with set and get since increased size? so diff positions if redone?
     // Figure out the size of the new table.
     int newSize = 2 * this.pairs.length + rand.nextInt(10);
@@ -424,20 +440,23 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
     if (REPORT_BASIC_CALLS && (reporter != null)) {
       reporter.report("Expanding to " + newSize + " elements.");
     } // if reporter != null
-    // Create a new table of that size.
-    Object[] newPairs = new Object[newSize];
-    // Move all pairs from the old table to their appropriate
-    // location in the new table.
+
+    Object[] oldPairs = this.pairs;
+    
+    this.pairs = new Object[newSize];
+    this.size = 0;
     
 
     // Move all the values from the old table to their appropriate 
     // location in the new table.
-    for (int i = 0; i < this.pairs.length; i++) {
-      newPairs[i] = this.pairs[i];
+    for (int i = 0; i < oldPairs.length; i++) {
+      
+      if (oldPairs[i] != null) { // pair here at i
+        Pair<K, V> movePair = (Pair <K, V>) oldPairs[i];
+        set(movePair.key(), movePair.value());
+      } // if
     } // for
 
-    // And update our pairs
-    this.pairs = newPairs;
   } // expand()
 
   /**
