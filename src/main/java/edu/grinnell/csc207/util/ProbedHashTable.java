@@ -361,9 +361,15 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
   /**
    * Expand the size of the table.
    */
-  void expand() {
+  void expand() { // doesn't this also mess with set and get since increased size? so diff positions if redone?
     // Figure out the size of the new table.
     int newSize = 2 * this.pairs.length + rand.nextInt(10);
+
+    //check that size is not multiple of Probe Offset
+    if (newSize % PROBE_OFFSET == 0) {
+      newSize++; // Under assumption that probe_offset is not 1 / prime
+    } // if
+
     if (REPORT_BASIC_CALLS && (reporter != null)) {
       reporter.report("Expanding to " + newSize + " elements.");
     } // if reporter != null
@@ -371,8 +377,16 @@ public class ProbedHashTable<K, V> implements HashTable<K, V> {
     Object[] newPairs = new Object[newSize];
     // Move all pairs from the old table to their appropriate
     // location in the new table.
-    // STUB
+    
+
+    // Move all the values from the old table to their appropriate 
+    // location in the new table.
+    for (int i = 0; i < this.pairs.length; i++) {
+      newPairs[i] = this.pairs[i];
+    } // for
+
     // And update our pairs
+    this.pairs = newPairs;
   } // expand()
 
   /**
